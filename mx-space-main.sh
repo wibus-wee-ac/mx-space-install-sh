@@ -3,7 +3,7 @@
  # @author: Wibus
  # @Date: 2021-08-12 15:01:23
  # @LastEditors: Wibus
- # @LastEditTime: 2021-12-11 06:26:18
+ # @LastEditTime: 2021-12-11 06:39:29
  # Coding With IU
  # Blog: https://iucky.cn/
  # Description: Install Tools
@@ -354,13 +354,6 @@ cd mx
 # 如果内存小于2GB，就输出错误
 if [ $MEMORY -lt 2000 ]; then
   echo "服务器可使用内存不足，为您自动调整为云端编译"
-  echo "检查zx是否安装..."
-  which zx
-  if [ $? -eq 0 ]; then
-    echo "zx已安装"
-  else
-    npm install -g zx
-  fi
   echo "！！由于云端编译相关脚本暂时未能确定，因此目前只能通过screen或手写pm2配置文件来保持一直运行！！"
   echo "！！由于云端编译相关脚本暂时未能确定，因此目前只能通过screen或手写pm2配置文件来保持一直运行！！"
   echo "！！由于云端编译相关脚本暂时未能确定，因此目前只能通过screen或手写pm2配置文件来保持一直运行！！"
@@ -371,6 +364,25 @@ if [ $MEMORY -lt 2000 ]; then
   npm i zx
   wget -O server-deploy.js https://cdn.jsdelivr.net/gh/mx-space/server-next@master/scripts/deploy.js
   node server-deploy.js --jwtSecret=$AUTH_PASSWORD --allowed_origins=$ALLOW_ORIGINS
+  echo "
+  module.exports = {
+    apps: [
+      {
+        name: 'mx-server',
+        script: 'index.js',
+        args: '--jwtSecret=$AUTH_PASSWORD --allowed_origins=$ALLOW_ORIGINS',
+        autorestart: true,
+        exec_mode: 'cluster',
+        watch: false,
+        instances: 2,
+        max_memory_restart: '230M',
+        env: {
+          NODE_ENV: 'production',
+        },
+      },
+    ],
+  }
+  " > ecosystem.config.js
 else
   echo "服务器可使用内存足够，为您自动调整为本地编译"
   git clone ${GIT_BASE_URL}mx-space/server-next.git --depth 1 server
@@ -382,7 +394,7 @@ else
     apps: [
       {
         name: 'mx-server',
-        script: 'dist/src/main.js --jwtSecret=$AUTH_PASSWORD --allowed_origins=$ALLOW_ORIGINS',
+        script: 'dist/src/main.js',
         args: '--jwtSecret=$AUTH_PASSWORD --allowed_origins=$ALLOW_ORIGINS',
         autorestart: true,
         exec_mode: 'cluster',
@@ -470,7 +482,8 @@ done
 echo "检测redis是否运行中..."
 while true
 do
-  $REDIS_CLI_PATH -h 127.0.0.1 -p 6379 ping &>/dev/null
+  # $REDIS_CLI_PATH -h 127.0.0.1 -p 6379 ping &>/dev/null
+  lsof -i:6379 -P -n | grep LISTEN &>/dev/null
   if [ $? -eq 0 ]; then
     echo "redis启动成功"
     break
@@ -483,7 +496,8 @@ done
 echo "检测nginx是否启动中..."
 while true
 do
-  curl -s -I 127.0.0.1 &>/dev/null
+  # curl -s -I 127.0.0.1 &>/dev/null
+  lsof -i:80 -P -n | grep LISTEN &>/dev/null
   if [ $? -eq 0 ]; then
     echo "nginx启动成功"
     break
@@ -499,7 +513,8 @@ yarn prod:pm2
 echo "检测server是否已启动..."
 while true
 do
-  curl -s -m 5 -o /dev/null -w "%{http_code}" ${IP}:2333 &>/dev/null
+  # curl -s -m 5 -o /dev/null -w "%{http_code}" ${IP}:2333 &>/dev/null
+  lsof -i:2333 -P -n | grep LISTEN &>/dev/null
   if [ $? -eq 0 ]; then
     echo "启动成功"
     break
@@ -520,7 +535,8 @@ yarn prod:pm2
 echo "检测kami是否已启动..."
 while true
 do
-  curl -s -m 5 -o /dev/null -w "%{http_code}" ${IP}:2323 &>/dev/null
+  # curl -s -m 5 -o /dev/null -w "%{http_code}" ${IP}:2323 &>/dev/null
+  lsof -i:2323 -P -n | grep LISTEN &>/dev/null
   if [ $? -eq 0 ]; then
     echo "启动成功"
     break
