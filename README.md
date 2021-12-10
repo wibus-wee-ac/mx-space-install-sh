@@ -16,6 +16,10 @@ curl https://raw.githubusercontent.com/wibus-wee/mx-space-install-sh/main/mx-spa
 sh mx.sh
 ```
 
+## Watch out!
+
+您只需要按照README的去做，千万不要随意执行仓库内的任意脚本！
+
 ## Logs
 
 - Finish, 目前已完成基本操作，可投入使用
