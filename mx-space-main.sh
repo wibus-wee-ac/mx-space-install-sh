@@ -1,9 +1,9 @@
 ###
- # @FilePath: /mx-space-install/mx-space-create.sh
+ # @FilePath: /mx-space-install/mx-space-main.sh
  # @author: Wibus
  # @Date: 2021-08-12 15:01:23
  # @LastEditors: Wibus
- # @LastEdi    tTime: 2021-12-05 21:05:36
+ # @LastEditTime: 2021-12-11 06:26:18
  # Coding With IU
  # Blog: https://iucky.cn/
  # Description: Install Tools
@@ -15,7 +15,11 @@ echo "Author: Wibus"
 echo "————————————————————————————————————————"
 echo "您需要提前安装好的软件包如下：" 
 echo "redis mongodb nginx/apache"
-echo "——————请使用root用户执行此脚本——————" 
+# whoami 检测用户类型
+if [ $(whoami) != "root" ]; then
+    echo "请使用root用户运行此脚本"
+    exit 1
+fi
 
 echo "检测系统版本..."
 check_sys(){
@@ -198,14 +202,14 @@ fi
 
 echo "-------------接下来有几个问题需要你回答-------------"
 
-echo "请输入你的前台域名（如：www.baidu.com）"
+echo "请输入你的前台域名（如：https://www.baidu.com，请务必带上协议）"
 read DOMAIN
 # 如果是空的
 if [ -z "$DOMAIN" ]; then
   DOMAIN="iucky.cn"
 fi
 
-echo "请输入你的后台域名（如：www.baidu.com）"
+echo "请输入你的后台域名（如：https://www.baidu.com，请务必带上协议）"
 read DOMAIN_BACK
 # 如果是空的
 if [ -z "$DOMAIN_BACK" ]; then
@@ -215,7 +219,7 @@ fi
 echo "请输入允许跨域的域名（你的前台域名与后台域名将会被自动添加)，多个域名用逗号隔开"
 read ALLOW_ORIGINS
 # 向ALLOW_ORIGINS中添加$DOMAIN
-ALLOW_ORIGINS="$ALLOW_ORIGINS,$DOMAIN,$DOMAIN_BACK"
+ALLOW_ORIGINS="$DOMAIN,$DOMAIN_BACK,$ALLOW_ORIGINS"
 # 如果是空的
 if [ -z "$ALLOW_ORIGINS" ]; then
     ALLOW_ORIGINS="localhost:2323,127.0.0.1,localhost:9528,test-space.iucky.cn,baidu.com,www.baidu.com,admin.iucky.cn,cli.iucky.cn,google.com"
@@ -379,6 +383,7 @@ else
       {
         name: 'mx-server',
         script: 'dist/src/main.js --jwtSecret=$AUTH_PASSWORD --allowed_origins=$ALLOW_ORIGINS',
+        args: '--jwtSecret=$AUTH_PASSWORD --allowed_origins=$ALLOW_ORIGINS',
         autorestart: true,
         exec_mode: 'cluster',
         watch: false,
@@ -422,8 +427,7 @@ NEXT_PUBLIC_ALWAYS_HTTPS=1
 ASSETPREFIX=
 NETEASE_PHONE=$NETEASE_PHONE
 NETEASE_PASSWORD=$NETEASE_PASSWORD
-NEXT_PUBLIC_APIURL=$DOMAIN_BACK/api/v2
-" >> .env
+" > .env
 pnpm run build
 echo "------------安装Kami完成-------------"
 
@@ -479,7 +483,7 @@ done
 echo "检测nginx是否启动中..."
 while true
 do
-  curl -s -I $DOMAIN_BACK &>/dev/null
+  curl -s -I 127.0.0.1 &>/dev/null
   if [ $? -eq 0 ]; then
     echo "nginx启动成功"
     break
