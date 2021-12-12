@@ -3,7 +3,7 @@
  # @author: Wibus
  # @Date: 2021-08-12 15:01:23
  # @LastEditors: Wibus
- # @LastEditTime: 2021-12-12 08:17:51
+ # @LastEditTime: 2021-12-12 16:30:35
  # Coding With IU
  # Blog: https://iucky.cn/
  # Description: Install Tools
@@ -109,11 +109,39 @@ echo "-------------必要软件安装--------------"
 install_dependencies
 echo "检查是否安装成功软件..."
 if [[ ${release} == "centos" ]]; then
-  yum list installed | grep -q "git|wget|curl|unzip|vim"
+  yum list installed | grep -q "git"
   if [ $? -eq 0 ]; then
-    echo "软件安装成功"
+    echo "git安装成功"
   else
-    echo "软件安装失败，请联系开发者"
+    echo "git安装失败，请联系开发者"
+    exit 1
+  fi
+  yum list installed | grep -q "wget"
+  if [ $? -eq 0 ]; then
+    echo "wget安装成功"
+  else
+    echo "wget安装失败，请联系开发者"
+    exit 1
+  fi
+  yum list installed | grep -q "curl"
+  if [ $? -eq 0 ]; then
+    echo "curl安装成功"
+  else
+    echo "curl安装失败，请联系开发者"
+    exit 1
+  fi
+  yum list installed | grep -q "unzip"
+  if [ $? -eq 0 ]; then
+    echo "unzip安装成功"
+  else
+    echo "unzip安装失败，请联系开发者"
+    exit 1
+  fi
+  yum list installed | grep -q "vim"
+  if [ $? -eq 0 ]; then
+    echo "vim安装成功"
+  else
+    echo "vim安装失败，请联系开发者"
     exit 1
   fi
 elif [[ ${release} == "ubuntu" ]]; then
@@ -171,7 +199,10 @@ else
     apt-get install nodejs
   fi
   echo "nodejs "$NODE".x 安装成功"
-  echo "~安装其他依赖~"
+  echo "-------------依赖安装完成✅--------------"
+  echo "nodejs安装成功"
+fi
+echo "~安装其他依赖~"
   # 检查nodejs依赖是否安装
   echo "检查yarn是否安装..."
   which yarn
@@ -194,9 +225,6 @@ else
   else
     npm install -g pm2
   fi
-  echo "-------------依赖安装完成✅--------------"
-  echo "nodejs安装成功"
-fi
 
 
 
