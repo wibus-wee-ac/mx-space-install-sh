@@ -3,7 +3,7 @@
  # @author: Wibus
  # @Date: 2021-08-12 15:01:23
  # @LastEditors: Wibus
- # @LastEditTime: 2021-12-11 06:39:29
+ # @LastEditTime: 2021-12-12 08:17:51
  # Coding With IU
  # Blog: https://iucky.cn/
  # Description: Install Tools
@@ -13,7 +13,7 @@ clear
 echo "——————mx-space一键部署程序🔫——————————"
 echo "Author: Wibus"
 echo "————————————————————————————————————————"
-echo "您需要提前安装好的软件包如下：" 
+echo "您需要提前安装好的软件包如下: " 
 echo "redis mongodb nginx/apache"
 # whoami 检测用户类型
 if [ $(whoami) != "root" ]; then
@@ -155,11 +155,11 @@ if [[ ${nodejs_version} == "v"* ]]; then
 else
   echo "nodejs未安装，开始安装..."
   echo "-------------依赖安装--------------"
-  echo "请输入nodejs安装版本（一般：16）"
+  echo "请输入nodejs安装版本（一般: 16）"
   read NODE -t 5
   echo "nodejs "$NODE".x 安装"
   echo "5s 后开始安装"
-  echo "请检查链接：https://rpm.nodesource.com/setup_$NODE.x"
+  echo "请检查链接: https://rpm.nodesource.com/setup_$NODE.x"
   read -t 5
   curl -sL https://rpm.nodesource.com/setup_$NODE.x | sudo -E bash -
   # 安装nodejs （centos/ubuntu/debian）
@@ -202,14 +202,25 @@ fi
 
 echo "-------------接下来有几个问题需要你回答-------------"
 
-echo "请输入你的前台域名（如：https://www.baidu.com，请务必带上协议）"
+echo "请输入您网站的名称（如: 秉性之松）"
+read WEB_NAME
+if [ -z "$WEB_NAME" ]; then
+  WEB_NAME="秉性之松"
+fi
+echo "请输入您的网站描述（如: 有秉性且正直的松）"
+read WEB_DESC
+if [ -z "$WEB_DESC" ]; then
+  WEB_DESC="有秉性且正直的松"
+fi
+
+echo "请输入你的前台域名（如: https://www.baidu.com，请务必带上协议）"
 read DOMAIN
 # 如果是空的
 if [ -z "$DOMAIN" ]; then
   DOMAIN="iucky.cn"
 fi
 
-echo "请输入你的后台域名（如：https://www.baidu.com，请务必带上协议）"
+echo "请输入你的后台域名（如: https://www.baidu.com，请务必带上协议）"
 read DOMAIN_BACK
 # 如果是空的
 if [ -z "$DOMAIN_BACK" ]; then
@@ -253,7 +264,35 @@ echo "请输入您的网易云密码（我们不会获取到您的信息）（op
 read NETEASE_PASSWORD
 echo "请输入您的Google分析ID （optional,可以不填写）"
 read GOOGLE_ANALYTICS_ID
-echo "请问您的服务器在国内还是国外？(国内：cn，国外：us，默认cn)"
+echo "请输入您的备案号（optional,可以不填写）"
+read RECORD_NUMBER
+echo "请输入当点击备案号跳转的地址（optional,可以不填写）"
+read RECORD_URL
+echo "请输入bilibiliId （optional,可以不填写）"
+read BILIBILI_ID
+# 如果是空的
+if [ -z "$BILIBILI_ID" ]; then
+    BILIBILI_ID="0"
+fi
+echo "请输入捐赠通道链接（optional,可以不填写，默认为innei的捐赠通道）"
+read DONATE_URL
+# 如果是空的
+if [ -z "$DONATE_URL" ]; then
+    DONATE_URL="https://afdian.net/@Innei"
+fi
+echo "请输入GitHub用户名（optional,可以不填写）"
+read GITHUB_USERNAME
+# 如果是空的
+if [ -z "$GITHUB_USERNAME" ]; then
+    GITHUB_USERNAME="wibus-wee"
+fi
+echo "请输入QQ跳转链接（optional,可以不填写）"
+read QQ_URL
+echo "请输入Twitter跳转链接（optional,可以不填写）"
+read TWITTER_URL
+
+
+echo "请问您的服务器在国内还是国外？(国内: cn，国外: us，默认cn)"
 read SERVER_TYPE
 # 如果是空的
 if [ -z "$SERVER_TYPE" ]; then
@@ -266,19 +305,19 @@ if [ -z "$NEED_ADMIN" ]; then
     NEED_ADMIN="n"
 fi
 if [ "$NEED_ADMIN" = "y" ]; then
-    echo "请输入你的中后台域名（如：www.baidu.com）"
+    echo "请输入你的中后台域名（如: www.baidu.com）"
     read DOMAIN_ADMIN
     # 如果是空的
     if [ -z "$DOMAIN_BACK" ]; then
-        echo "请输入你的中后台域名（如：www.baidu.com）"
+        echo "请输入你的中后台域名（如: www.baidu.com）"
         read DOMAIN_ADMIN
     fi
     # 输入中后台站点文件夹路径
-    echo "请输入你的中后台站点文件夹路径（如：/www/wwwroot/admin.test.cn/）"
+    echo "请输入你的中后台站点文件夹路径（如: /www/wwwroot/admin.test.cn/）"
     read ADMIN_PATH
     # 如果是空的
     if [ -z "$ADMIN_PATH" ]; then
-        echo "请输入你的中后台站点文件夹路径（如：/www/wwwroot/admin.test.cn/）"
+        echo "请输入你的中后台站点文件夹路径（如: /www/wwwroot/admin.test.cn/）"
         read ADMIN_PATH
     fi
 fi
@@ -288,6 +327,15 @@ read NEED_START_MX_SPACE
 # 如果是空的
 if [ -z "$NEED_START_MX_SPACE" ]; then
     NEED_START_MX_SPACE="n"
+fi
+
+echo "因为在给用户使用的时候需要自己修改src内的文件，因此会有可能会在git pull的时候出现有冲突的情况"
+echo "是否需要为你制作默认的kami更新脚本？（y/n，默认为否）"
+echo "请注意! 此脚本仅会为你备份以下文件: .env configs.ts manifest.json ecosystem.config.js"
+read NEED_KAMI_UPDATE
+# 如果是空的
+if [ -z "$NEED_KAMI_UPDATE" ]; then
+    NEED_KAMI_UPDATE="n"
 fi
 
 echo "-------------好的👌脚本将会按照上面几个问题的答案为你安装Mix-Space-------------"
@@ -310,7 +358,12 @@ IP=$(curl -s -4 icanhazip.com)
 echo "获取redis-cli的位置"
 REDIS_CLI_PATH=$(which redis-cli)
 
+echo "获取GitHub图标跳转链接"
+GITHUB_URL="https://github.com/$GITHUB_USERNAME"
+
 echo "输出全部变量"
+echo "WEB_NAME: $WEB_NAME"
+echo "WEB_DESC: $WEB_DESC"
 echo "DOMAIN: $DOMAIN"
 echo "DOMAIN_BACK: $DOMAIN_BACK"
 echo "ALL_DOMAIN: $ALL_DOMAIN"
@@ -323,11 +376,20 @@ echo "MONGODB_PASSWORD: $MONGODB_PASSWORD"
 echo "NETEASE_PHONE: $NETEASE_PHONE"
 echo "NETEASE_PASSWORD: $NETEASE_PASSWORD"
 echo "GOOGLE_ANALYTICS_ID: $GOOGLE_ANALYTICS_ID"
+echo "RECORD_NUMBER: $RECORD_NUMBER"
+echo "RECORD_URL: $RECORD_URL"
+echo "BILIBILI_ID: $BILIBILI_ID"
+echo "DONATE_URL: $DONATE_URL"
+echo "GITHUB_USERNAME: $GITHUB_USERNAME"
+echo "QQ_URL: $QQ_URL"
+echo "TWITTER_URL: $TWITTER_URL"
+echo "GITHUB_URL_USER: $GITHUB_URL_USER"
 echo "SERVER_TYPE: $SERVER_TYPE"
 echo "NEED_ADMIN: $NEED_ADMIN"
 echo "DOMAIN_ADMIN: $DOMAIN_ADMIN"
 echo "ADMIN_PATH: $ADMIN_PATH"
 echo "NEED_START_MX_SPACE: $NEED_START_MX_SPACE"
+echo "NEED_KAMI_UPDATE: $NEED_KAMI_UPDATE"
 
 
 echo "------------安装前检测服务器-------------"
@@ -336,8 +398,8 @@ echo "获取机器的内存与CPU核数中..."
 MEMORY=$(free -m | awk "/Mem:/{print $2}")
 CPU_NUM=$(cat /proc/cpuinfo | grep processor | wc -l)
 # 输出
-echo "内存：$MEMORY MB"
-echo "CPU核数：$CPU_NUM"
+echo "内存: $MEMORY MB"
+echo "CPU核数: $CPU_NUM"
 
 echo "------------检测结束，已获得基本信息-------------"
 
@@ -354,10 +416,10 @@ cd mx
 # 如果内存小于2GB，就输出错误
 if [ $MEMORY -lt 2000 ]; then
   echo "服务器可使用内存不足，为您自动调整为云端编译"
-  echo "！！由于云端编译相关脚本暂时未能确定，因此目前只能通过screen或手写pm2配置文件来保持一直运行！！"
-  echo "！！由于云端编译相关脚本暂时未能确定，因此目前只能通过screen或手写pm2配置文件来保持一直运行！！"
-  echo "！！由于云端编译相关脚本暂时未能确定，因此目前只能通过screen或手写pm2配置文件来保持一直运行！！"
-  echo "！！由于云端编译相关脚本暂时未能确定，因此目前只能通过screen或手写pm2配置文件来保持一直运行！！"
+  echo "!由于云端编译相关脚本暂时未能确定，因此目前只能通过screen或手写pm2配置文件来保持一直运行!"
+  echo "!由于云端编译相关脚本暂时未能确定，因此目前只能通过screen或手写pm2配置文件来保持一直运行!"
+  echo "!由于云端编译相关脚本暂时未能确定，因此目前只能通过screen或手写pm2配置文件来保持一直运行!"
+  echo "!由于云端编译相关脚本暂时未能确定，因此目前只能通过screen或手写pm2配置文件来保持一直运行!"
   sleep 5
   npm i -g zx pm2
   npm init -y
@@ -440,6 +502,21 @@ ASSETPREFIX=
 NETEASE_PHONE=$NETEASE_PHONE
 NETEASE_PASSWORD=$NETEASE_PASSWORD
 " > .env
+cd ~/mx/kami
+sed -i 'configs.ts.bak' "s/https:\/\/github.com\/Innei/$GITHUB_URL_USER/g" configs.ts # 替换配置文件中的github地址
+sed -i 'configs.ts.bak' "s/https:\/\/jq.qq.com\/?_wv=1027&k=5t9N0mw/$QQ_URL/g" configs.ts
+sed -i 'configs.ts.bak' "s/https:\/\/twitter.com\/__oQuery/$TWITTER_URL/g" configs.ts
+sed -i 'configs.ts.bak' "s/26578164/$BILIBILI_ID/g" configs.ts
+sed -i 'configs.ts.bak' "s/https:\/\/innei.ren/$DOMAIN/g" configs.ts
+sed -i 'configs.ts.bak' "s/浙ICP备 20028356 号/$RECORD_NUMBER/g" configs.ts
+sed -i 'configs.ts.bak' "s/http:\/\/beian.miit.gov.cn/$RECORD_URL/g" configs.ts
+sed -i 'configs.ts.bak' "s/https:\/\/afdian.net\/@Innei/$DONATE_URL/g" configs.ts
+cd ~/mx/kami/pages
+sed -i '_document.tsx.bak' "s/静かな森/$WEB_NAME/g" _document.tsx
+cd ..
+cd public
+sed -i 'manifest.json.bak' "s/静かな森/$WEB_NAME/g" manifest.json
+sed -i 'manifest.json.bak' "s/致虚极，守静笃。/$WEB_DESC/g" manifest.json
 pnpm run build
 echo "------------安装Kami完成-------------"
 
@@ -462,6 +539,26 @@ if [ "$NEED_BACK" = "y" ]; then
   yarn build
   cp -rf ~/mx/admin/dist/* /www/wwwroot/$(DOMAIN_ADMIN)/ # 将静态文件复制到静态文件目录
   echo "------------中后台安装完成-------------"
+fi
+
+if [ "$NEED_KAMI_UPDATE" = "y" ]; then
+  echo "------------制作Kami更新脚本中-------------"
+  echo "从远程抓取kami-update.sh中"
+  curl ${GIT_BASE_URL}/wibus-wee/mx-space-install-sh/main/mx-space-kami-update.sh -o kami-update.sh
+  chmod +x kami-update.sh
+  echo "建立更新备份文件夹"
+  mkdir -p ~/mx/kami_userback && cd ~/mx/kami_userback
+  echo "复制.env"
+  cp ~/mx/kami/.env .env && echo "FINISH & SUCCESS"
+  echo "复制config.ts"
+  cp ~/mx/kami/config.ts config.ts && echo "FINISH & SUCCESS"
+  echo "复制manifest.json"
+  cp ~/mx/kami/public/manifest.json manifest.json && echo "FINISH & SUCCESS"
+  echo "复制_document.tsx"
+  cp ~/mx/kami/src/pages/_document.tsx _document.tsx && echo "FINISH & SUCCESS"
+  echo "尝试运行"
+  cd ..
+  sh kami-update.sh
 fi
 
 echo "------------启动全部必要程序-------------"
@@ -603,7 +700,7 @@ if [ $NEED_START_MX_SPACE == "y" ]; then
 # 开机自动运行
 echo "您在开头的问题中选择了开机自启，需要提醒您的是，若在自动启动中出现问题，请手动执行 start.sh 运行"
 echo "若您已阅读完毕且已知晓，请输入y以继续"
-read -p "请输入y以继续：" NEED_START_MX_SPACE
+read -p "请输入y以继续: " NEED_START_MX_SPACE
   if [ $NEED_START_MX_SPACE == "y" ]; then
   echo "
   #!/bin/bash
@@ -616,7 +713,7 @@ read -p "请输入y以继续：" NEED_START_MX_SPACE
 fi
 
 
-echo "请前往server端的网站配置文件，在 access_log 字段上面，添加如下配置："
+echo "请前往server端的网站配置文件，在 access_log 字段上面，添加如下配置: "
 echo '
 location /socket.io {
     proxy_http_version 1.1;
