@@ -2,7 +2,9 @@
 
 A user-friendly script to install MX-space
 
-您只需要按照README的去做，千万不要随意执行仓库内的任意脚本！
+~~您只需要按照README的去做，千万不要随意执行仓库内的任意脚本！~~
+
+请暂时不要使用此脚本，此脚本还正在调试当中！
 
 ## Use (CN)
 
