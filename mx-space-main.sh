@@ -1,27 +1,13 @@
 ###
- # @FilePath: /mx-space-install/mx-space-main.sh
+ # @FilePath: /mx-space-install-sh/mx-space-main.sh
  # @author: Wibus
  # @Date: 2021-08-12 15:01:23
  # @LastEditors: Wibus
- # @LastEditTime: 2021-12-12 16:30:35
+ # @LastEditTime: 2022-01-30 20:27:49
  # Coding With IU
  # Blog: https://iucky.cn/
  # Description: Install Tools
 ### 
-
-clear
-echo "——————mx-space一键部署程序🔫——————————"
-echo "Author: Wibus"
-echo "————————————————————————————————————————"
-echo "您需要提前安装好的软件包如下: " 
-echo "redis mongodb nginx/apache"
-# whoami 检测用户类型
-if [ $(whoami) != "root" ]; then
-    echo "请使用root用户运行此脚本"
-    exit 1
-fi
-
-echo "检测系统版本..."
 check_sys(){
   if [[ -f /etc/redhat-release ]]; then
     release="centos"
@@ -92,6 +78,30 @@ check_software(){
     exit 1
   fi
 }
+
+
+
+clear
+echo "——————mx-space一键部署程序🔫——————————"
+echo "Author: Wibus"
+echo "————————————————————————————————————————"
+echo "您需要提前安装好的软件包如下: " 
+echo "redis mongodb nginx/apache"
+# whoami 检测用户类型
+if [ $(whoami) != "root" ]; then
+    echo "请使用root用户运行此脚本"
+    exit 1
+fi
+echo "获取内核版本..."
+KERNEL_VERSION=$(uname -r)
+# 如果小于 4.18 则退出
+if [[ "${KERNEL_VERSION}" <= "4.18" ]]; then
+    echo "当前内核版本为: ${KERNEL_VERSION}"
+    echo "请使用内核版本 4.18更高版本"
+    exit 1
+fi
+
+echo "检测系统版本..."
 # 输出系统版本
 check_sys
 echo "检测到系统版本为: ${release}"
@@ -268,7 +278,8 @@ echo "请输入授权码（随便输入）"
 read AUTH_PASSWORD
 # 如果是空的
 if [ -z "$AUTH_PASSWORD" ]; then
-    AUTH_PASSWORD="sdfaw4raw4r231"
+    # 随机生成
+    AUTH_PASSWORD=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1`
 fi
 
 # 获取 MONGODB_USERNAME
@@ -350,12 +361,12 @@ if [ "$NEED_ADMIN" = "y" ]; then
     fi
 fi
 
-echo "是否需要每次启动服务器时自动启动mx-space？（y/n，默认为否）"
-read NEED_START_MX_SPACE
-# 如果是空的
-if [ -z "$NEED_START_MX_SPACE" ]; then
-    NEED_START_MX_SPACE="n"
-fi
+# echo "是否需要每次启动服务器时自动启动mx-space？（y/n，默认为否）"
+# read NEED_START_MX_SPACE
+# # 如果是空的
+# if [ -z "$NEED_START_MX_SPACE" ]; then
+#     NEED_START_MX_SPACE="n"
+# fi
 
 echo "因为在给用户使用的时候需要自己修改src内的文件，因此会有可能会在git pull的时候出现有冲突的情况"
 echo "是否需要为你制作默认的kami更新脚本？（y/n，默认为否）"
@@ -416,7 +427,7 @@ echo "SERVER_TYPE: $SERVER_TYPE"
 echo "NEED_ADMIN: $NEED_ADMIN"
 echo "DOMAIN_ADMIN: $DOMAIN_ADMIN"
 echo "ADMIN_PATH: $ADMIN_PATH"
-echo "NEED_START_MX_SPACE: $NEED_START_MX_SPACE"
+# echo "NEED_START_MX_SPACE: $NEED_START_MX_SPACE"
 echo "NEED_KAMI_UPDATE: $NEED_KAMI_UPDATE"
 
 
@@ -454,25 +465,7 @@ if [ $MEMORY -lt 2000 ]; then
   npm i zx
   wget -O server-deploy.js https://cdn.jsdelivr.net/gh/mx-space/server-next@master/scripts/deploy.js
   node server-deploy.js --jwtSecret=$AUTH_PASSWORD --allowed_origins=$ALLOW_ORIGINS
-  echo "
-  module.exports = {
-    apps: [
-      {
-        name: 'mx-server',
-        script: 'index.js',
-        args: '--jwtSecret=$AUTH_PASSWORD --allowed_origins=$ALLOW_ORIGINS',
-        autorestart: true,
-        exec_mode: 'cluster',
-        watch: false,
-        instances: 2,
-        max_memory_restart: '230M',
-        env: {
-          NODE_ENV: 'production',
-        },
-      },
-    ],
-  }
-  " > ecosystem.config.js
+  pm2 reload ecosystem.config.js -- --jwtSecret=$AUTH_PASSWORD --allowed_origins=$ALLOW_ORIGINS
 else
   echo "服务器可使用内存足够，为您自动调整为本地编译"
   git clone ${GIT_BASE_URL}mx-space/server-next.git --depth 1 server
@@ -526,6 +519,7 @@ NEXT_PUBLIC_APIURL=$DOMAIN_BACK/api/v2
 NEXT_PUBLIC_GATEWAY_URL=$DOMAIN_BACK
 NEXT_PUBLIC_TRACKING_ID=$GOOGLE_ANALYTICS_ID
 NEXT_PUBLIC_ALWAYS_HTTPS=1
+NEXT_PUBLIC_SNIPPET_NAME=kami
 ASSETPREFIX=
 NETEASE_PHONE=$NETEASE_PHONE
 NETEASE_PASSWORD=$NETEASE_PASSWORD
@@ -633,6 +627,7 @@ do
 done
 
 cd ~/mx/server
+echo "------------启动Server-------------"
 yarn prod:pm2
 # 检测2333端口是否启动
 echo "检测server是否已启动..."
@@ -655,6 +650,7 @@ do
 done
 
 cd ~/mx/kami
+echo "------------启动Kami-------------"
 yarn prod:pm2
 # 检测2323端口是否启动
 echo "检测kami是否已启动..."
@@ -687,7 +683,7 @@ yarn prod:pm2
 echo 检测server是否已启动...
 while true
 do
-  curl -s -m 5 -o /dev/null -w %{http_code} ${IP}:2333 &>/dev/null
+  lsof -i:2333 -P -n | grep LISTEN &>/dev/null
   if [ $? -eq 0 ]; then
     echo 启动成功
     break
@@ -707,7 +703,7 @@ yarn prod:pm2
 echo 检测kami是否已启动...
 while true
 do
-  curl -s -m 5 -o /dev/null -w %{http_code} ${IP}:2323 &>/dev/null
+  lsof -i:2323 -P -n | grep LISTEN &>/dev/null
   if [ $? -eq 0 ]; then
     echo 启动成功
     break
@@ -723,22 +719,22 @@ do
 done
 " > ~/mx/start.sh
 
-# 如果 NEED_START_MX_SPACE 为 y
-if [ $NEED_START_MX_SPACE == "y" ]; then
-# 开机自动运行
-echo "您在开头的问题中选择了开机自启，需要提醒您的是，若在自动启动中出现问题，请手动执行 start.sh 运行"
-echo "若您已阅读完毕且已知晓，请输入y以继续"
-read -p "请输入y以继续: " NEED_START_MX_SPACE
-  if [ $NEED_START_MX_SPACE == "y" ]; then
-  echo "
-  #!/bin/bash
-  cd ~/mx/server
-  yarn prod:pm2
-  cd ~/mx/kami
-  yarn prod:pm2
-  " >> /etc/rc.d/rc.local
-  fi
-fi
+# # 如果 NEED_START_MX_SPACE 为 y
+# if [ $NEED_START_MX_SPACE == "y" ]; then
+# # 开机自动运行
+# echo "您在开头的问题中选择了开机自启，需要提醒您的是，若在自动启动中出现问题，请手动执行 start.sh 运行"
+# echo "若您已阅读完毕且已知晓，请输入y以继续"
+# read -p "请输入y以继续: " NEED_START_MX_SPACE
+#   if [ $NEED_START_MX_SPACE == "y" ]; then
+#   echo "
+#   #!/bin/bash
+#   cd ~/mx/server
+#   yarn prod:pm2
+#   cd ~/mx/kami
+#   yarn prod:pm2
+#   " >> /etc/rc.d/rc.local
+#   fi
+# fi
 
 
 echo "请前往server端的网站配置文件，在 access_log 字段上面，添加如下配置: "

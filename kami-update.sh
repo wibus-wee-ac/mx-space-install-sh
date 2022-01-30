@@ -1,14 +1,14 @@
 ###
- # @FilePath: /mx-space-install/kami-update.sh
+ # @FilePath: /mx-space-install-sh/kami-update.sh
  # @author: Wibus
  # @Date: 2021-07-20 15:30:37
  # @LastEditors: Wibus
- # @LastEditTime: 2021-12-12 07:31:00
+ # @LastEditTime: 2022-01-30 20:26:34
  # Coding With IU
 ### 
 cd || echo "cd failed" && exit 1
 cd mx || echo "cd failed" && exit 1
-cd kami_user || echo "cd failed" && exit 1
+cd kami_userback || echo "cd failed" && exit 1
 echo "复制 .env"
 cp .env ~/mx/kami/.env
 echo ok
