@@ -3,7 +3,7 @@
  # @author: Wibus
  # @Date: 2021-08-12 15:01:23
  # @LastEditors: Wibus
- # @LastEditTime: 2022-01-30 20:27:49
+ # @LastEditTime: 2022-01-30 20:31:38
  # Coding With IU
  # Blog: https://iucky.cn/
  # Description: Install Tools
@@ -385,7 +385,7 @@ echo "-------------设置变量中-------------"
 
 if [ "$SERVER_TYPE" = "cn" ]; then
   echo "根据地域设置GIT_BASE_URL中..."
-  GIT_BASE_URL='https://hub.fastgit.org/'
+  GIT_BASE_URL='https://github.com.cnpmjs.org/'
 else
   echo "根据地域设置GIT_BASE_URL中..."
   GIT_BASE_URL='https://github.com/'
