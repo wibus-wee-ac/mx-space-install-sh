@@ -1,9 +1,9 @@
 ###
- # @FilePath: /mx-space-install-sh/mx-space-main.sh
+ # @FilePath: /mx-space-install/mx-space-main.sh
  # @author: Wibus
  # @Date: 2021-08-12 15:01:23
  # @LastEditors: Wibus
- # @LastEditTime: 2022-01-30 20:31:38
+ # @LastEditTime: 2022-03-06 20:51:19
  # Coding With IU
  # Blog: https://iucky.cn/
  # Description: Install Tools
@@ -94,8 +94,10 @@ if [ $(whoami) != "root" ]; then
 fi
 echo "获取内核版本..."
 KERNEL_VERSION=$(uname -r)
+# 截取 KERNEL_VERSION 的前4个字符
+KERNEL_VERSION_SHORT=$(echo $KERNEL_VERSION | cut -c 1-4)
 # 如果小于 4.18 则退出
-if [[ "${KERNEL_VERSION}" <= "4.18" ]]; then
+if [[ "${KERNEL_VERSION_SHORT}" <= "4.18" ]]; then
     echo "当前内核版本为: ${KERNEL_VERSION}"
     echo "请使用内核版本 4.18更高版本"
     exit 1
